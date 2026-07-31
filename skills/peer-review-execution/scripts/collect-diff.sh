@@ -22,6 +22,12 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 default_base() {
+  local remote_head
+  if remote_head="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)"; then
+    # origin/main → main
+    echo "${remote_head#origin/}"
+    return 0
+  fi
   if git show-ref --verify --quiet refs/heads/main; then
     echo main
   elif git show-ref --verify --quiet refs/heads/master; then

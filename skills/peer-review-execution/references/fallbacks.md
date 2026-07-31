@@ -28,6 +28,7 @@ Same critic panel and quota rules as `/peer-review-plan` (see `~/.cursor/skills/
 1. Not a git repo → AskQuestion for patch path or abort.
 2. Empty diff → AskQuestion (base / uncommitted / already committed elsewhere).
 3. `collect-diff.sh` missing → manual `git status` + `git diff` + `git diff --cached`.
+4. Clean tree on a **root commit** (no `HEAD^`) with empty `base...HEAD` → `collect-diff.sh` should fall back to `empty-tree...HEAD` (`DIFF_MODE:initial-commit`). If the script is older and still empty, recreate the patch with `git diff "$(git hash-object -t tree /dev/null)" HEAD`.
 
 ## Subagent mutates files
 

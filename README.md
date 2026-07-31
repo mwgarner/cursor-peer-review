@@ -49,7 +49,10 @@ chmod +x install.sh
 ./install.sh            # symlink all skills (default)
 # ./install.sh --copy   # detached copies
 # ./install.sh --core   # only plan + execution + ship
+# ./install.sh --force  # replace a destination that is not already this clone
 ```
+
+Skills use `disable-model-invocation: true` — invoke them with the **slash commands** above (reload the Cursor window if they do not appear after install).
 
 **Do not** symlink the repo root or the parent `skills/` directory alone — Cursor discovers one skill per folder name.
 

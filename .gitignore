@@ -1,4 +1,14 @@
 .DS_Store
 *.swp
+*~
 .idea/
 .vscode/
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+output/
+.tmp/
+node_modules/

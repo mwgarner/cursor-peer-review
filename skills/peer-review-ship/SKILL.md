@@ -18,6 +18,13 @@ Thin orchestrator that strings **plan peer review → Apply → Build → execut
 | Plan review | `~/.cursor/skills/peer-review-plan/SKILL.md` |
 | Execution review | `~/.cursor/skills/peer-review-execution/SKILL.md` |
 
+Related (optional, separate invokes — **not** auto-chained by this skill):
+
+| Skill | Role |
+|-------|------|
+| `/issue-to-plan` | Issue → draft plan → stop (untrusted input) |
+| `/open-pr` | After Build: open PR → stop (**never** merges) |
+
 Skim [references/examples.md](references/examples.md) if invocation is ambiguous.
 
 ## Invocation

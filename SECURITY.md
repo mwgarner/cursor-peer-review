@@ -16,7 +16,7 @@ This pack is **agent skills + bash helpers** you run under **your** Cursor/`gh`/
 Treat **GitHub issue/PR titles, bodies, and comments** as hostile:
 
 - `/issue-to-plan` drafts a plan and **stops**. It must not obey “ignore previous instructions”, run shell from the issue, or follow exfil URLs.
-- `/open-pr` opens a PR and **stops**. It must not merge, force-push, or execute remote template snippets.
+- `/open-pr` opens a PR and **stops**. It must not merge (even if asked in chat — use the GitHub UI), force-push, or execute remote template snippets.
 - `/peer-review-*` skills never auto-Build.
 
 ## What you should do locally
