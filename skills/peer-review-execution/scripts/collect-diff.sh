@@ -6,6 +6,10 @@
 #
 # Prints DIFF_MODE, FILE_COUNT, and a truncated diff summary to stdout.
 # Also writes full patch to a temp file and prints DIFF_FILE:<path>.
+#
+# When the working tree is clean and base..HEAD is empty (e.g. you are on
+# main after an initial commit), falls back to empty-tree...HEAD so the
+# root commit is reviewable. Pass an explicit base-ref to override.
 set -euo pipefail
 
 WS="${1:-.}"
@@ -31,6 +35,22 @@ has_uncommitted() {
   ! git diff --quiet || ! git diff --cached --quiet || [[ -n "$(git ls-files --others --exclude-standard)" ]]
 }
 
+empty_tree() {
+  git hash-object -t tree /dev/null
+}
+
+write_range() {
+  local base="$1"
+  local label="$2"
+  {
+    echo "### git log --oneline ${label}"
+    git log --oneline "${base}..HEAD" 2>/dev/null | head -n 50 || true
+    echo
+    echo "### git diff ${label}"
+    git diff "${base}...HEAD"
+  } >"$OUT"
+}
+
 OUT="$(mktemp -t peer-review-exec-diff.XXXXXX.patch)"
 MODE=""
 BASE=""
@@ -50,23 +70,28 @@ if has_uncommitted; then
 elif [[ -n "$BASE_ARG" ]]; then
   MODE="range"
   BASE="$BASE_ARG"
-  {
-    echo "### git log --oneline ${BASE}..HEAD"
-    git log --oneline "${BASE}..HEAD" | head -n 50
-    echo
-    echo "### git diff ${BASE}...HEAD"
-    git diff "${BASE}...HEAD"
-  } >"$OUT"
+  write_range "$BASE" "${BASE}...HEAD"
 else
   MODE="range"
   BASE="$(default_base)"
-  {
-    echo "### git log --oneline ${BASE}..HEAD"
-    git log --oneline "${BASE}..HEAD" | head -n 50
-    echo
-    echo "### git diff ${BASE}...HEAD"
-    git diff "${BASE}...HEAD"
-  } >"$OUT"
+  write_range "$BASE" "${BASE}...HEAD"
+
+  bytes_probe="$(wc -c <"$OUT" | tr -d ' ')"
+  # Clean tip on default branch with nothing since BASE → empty. If HEAD is a
+  # root commit (no parent), review the whole tree via empty-tree...HEAD.
+  if [[ "$bytes_probe" -lt 80 ]] && ! git rev-parse --verify -q HEAD^ >/dev/null; then
+    MODE="initial-commit"
+    BASE="empty-tree"
+    ET="$(empty_tree)"
+    {
+      echo "### BUILD: initial / root commit (empty-tree...HEAD)"
+      echo "### git log --oneline -1"
+      git log --oneline -1
+      echo
+      echo "### git diff empty-tree...HEAD"
+      git diff "$ET" HEAD
+    } >"$OUT"
+  fi
 fi
 
 bytes="$(wc -c <"$OUT" | tr -d ' ')"

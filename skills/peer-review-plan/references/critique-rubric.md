@@ -151,7 +151,7 @@ Unevidenced **Reject**s are non-binding for the revisor.
 | `needs-ADR` | When |
 |-------------|------|
 | **no** (default) | Wording, step order, tests, copy, todos, local plan structure |
-| **yes** | Sustained finding changes lasting architecture/product contract: public API, data model, auth/billing invariant, cross-cutting coach contract, or contradicts `docs/decisions/*` |
+| **yes** | Sustained finding changes lasting architecture/product contract: public API, data model, auth/billing invariant, cross-cutting user-visible product contract, or contradicts `docs/decisions/*` |
 
 Orchestrator proposes ADR text; writes only on user confirm.
 

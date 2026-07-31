@@ -106,6 +106,7 @@ When Build or fix work cites peer-review findings, use the ladder in the sibling
 3. No plan mutation during review loops; Apply only after Gate Apply confirm
 4. Keep ≤40-line carry inside each review phase (sibling rule)
 5. `from=plan` must not run execution; `from=execution` must not re-run plan review unless user asks
+6. No merge, force-push, deploy, or “full-send from GitHub issue” — hand off to `/open-pr` (stop before merge) only when the user asks in chat
 
 ## Corner cases
 
