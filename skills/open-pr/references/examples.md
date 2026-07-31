@@ -6,30 +6,26 @@
 /open-pr
 ```
 
-Validate (e.g. `npm run check`), path-stage in-scope files, commit, push, `gh pr create`, print URL, **stop**.
+Validate → path-stage → commit → push → create PR → print URL → suggest `/merge-pr`.
 
 ## Already committed
-
-Working tree clean; branch is ahead of `origin/main`:
 
 ```
 /open-pr title: Document empty-tree diff fallback
 ```
 
-Skip commit; push if needed; open PR (or return existing PR URL); **stop**.
+Skip commit; push if needed; open or reuse PR; stop.
 
-## Custom validate
+## Open + land (orchestrated)
 
 ```
-/open-pr validate='npm run check' base=main
+/delivery-ship
 ```
 
-## Nothing to do
+Runs `/open-pr` then `/merge-pr` (merge still needs chat confirm).
 
-Clean tree and not ahead of base → stop with “nothing to PR” (do not invent commits).
+## Hard stops
 
-## Hard stops (by design)
-
-- Never `gh pr merge`
-- Never `git push --force` / `--force-with-lease`
-- Never `git add .`
+- Never merge inside `/open-pr`  
+- Never `git push --force`  
+- Never `git add .`  

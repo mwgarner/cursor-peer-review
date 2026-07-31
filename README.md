@@ -1,43 +1,46 @@
 # cursor-peer-review
 
-Cursor agent skills for **adversarial multi-model peer review** of plans before Build, then fidelity review of the diff after Build — with hard human gates so agents never auto-Build.
+Cursor agent skills for an **honest agent delivery loop**: adversarial multi-model **plan** peer review → human-gated Build → **execution** fidelity review → **agent** open PR → **agent** merge (chat-confirmed). No webhooks, no full-send from issue text, no “use the GitHub UI because agents shouldn’t merge.”
 
 | Skill | Slash command | Role |
 |-------|---------------|------|
 | `peer-review-plan` | `/peer-review-plan` | Multi-model critique of a Cursor plan before implementation |
 | `peer-review-execution` | `/peer-review-execution` | Critique the working-tree / commit diff against locked plan decisions |
 | `peer-review-ship` | `/peer-review-ship` | Gated handrail: plan review → Apply → Build → execution review |
-| `issue-to-plan` | `/issue-to-plan` | Draft a plan from a GitHub issue, then **stop** (untrusted input) |
-| `open-pr` | `/open-pr` | Validate → path-stage → commit → push → open PR, then **stop** (never merges) |
+| `issue-to-plan` | `/issue-to-plan` | Draft a plan from a GitHub issue, then **stop** (issue text is untrusted) |
+| `open-pr` | `/open-pr` | Validate → path-stage → commit → push → open PR, then **stop** |
+| `merge-pr` | `/merge-pr` | Wait for checks + **chat confirm** → `gh pr merge --squash` |
+| `delivery-ship` | `/delivery-ship` | Gated handrail: `/open-pr` then `/merge-pr` |
 
 > Shared as-is, no warranty. Do whatever you want with it (MIT). Issues/PRs may be ignored.
 
-**There is no full-send skill** (issue → build → merge). See [SECURITY.md](SECURITY.md).
+**There is no full-send-from-issue-body skill.** Gates stay in **chat**. See [SECURITY.md](SECURITY.md).
 
-Start with the [example walkthrough](examples/README.md) if you want to see review artifact shape before installing.
+Start with the [example walkthrough](examples/README.md) for review artifact shape.
 
 ## The one idea worth stealing
 
-Run **diverse-model critics in parallel**, merge them in an **isolated synthesizer**, stress-test consensus with a **planner defender**, then require **explicit human gates** (Apply deltas, Build done, Fix) before anything ships. Execution review checks the diff against the signed plan — not vibes.
+Run **diverse-model critics in parallel**, merge them in an **isolated synthesizer**, stress-test consensus with a **planner defender**, then require **explicit human gates** (Apply deltas, Build done, Fix, merge confirm) before anything lands on the default branch. Execution review checks the diff against the signed plan — not vibes.
 
-Auto-Build (and auto-merge from issue text) is the failure mode this pack is designed to prevent.
+Auto-Build / merge-from-issue-text is the failure mode this pack avoids. Agent merge **with a chat confirm after green checks** is intentional.
 
-## Recommended human pipeline
+## Recommended pipeline (honest)
 
 ```text
-/issue-to-plan 123          # optional; drafts plan; stops
-/peer-review-ship this plan # or plan + execution separately
-# … you Build when ready …
-/open-pr                    # opens PR; you merge in GitHub UI
+/issue-to-plan 123            # optional; drafts plan; stops
+/peer-review-ship this plan   # plan review → Apply → Build gate → execution review
+# … Build when you ask the agent in chat …
+/delivery-ship                # open PR, then merge-pr (still asks “merge?”)
+# or: /open-pr   then later   /merge-pr
 ```
 
-Every arrow that matters stays a **chat confirmation**, not a webhook.
+Every privileged step is a **chat confirmation**, not a webhook and not “because the issue said so.”
 
 ## Requirements
 
-- [Cursor](https://cursor.com/) with Task / subagent support and access to multiple models (for peer-review-*)
-- `gh` + `git` on PATH for `/issue-to-plan` and `/open-pr`
-- A bash-compatible environment (macOS, Linux, or WSL) for helper scripts
+- [Cursor](https://cursor.com/) with Task / subagent support and multi-model access (peer-review-*)
+- `gh` + `git` on PATH for issue/PR skills
+- Bash-compatible environment (macOS, Linux, or WSL) for helper scripts
 - Core three peer-review skills installed together — `/peer-review-ship` delegates to plan + execution
 
 ## Install
@@ -52,9 +55,9 @@ chmod +x install.sh
 # ./install.sh --force  # replace a destination that is not already this clone
 ```
 
-Skills use `disable-model-invocation: true` — invoke them with the **slash commands** above (reload the Cursor window if they do not appear after install).
+Skills use `disable-model-invocation: true` — invoke with the **slash commands** above (reload Cursor if they do not appear).
 
-**Do not** symlink the repo root or the parent `skills/` directory alone — Cursor discovers one skill per folder name.
+**Do not** symlink the repo root or the parent `skills/` directory alone.
 
 ### Manual install
 
@@ -63,7 +66,8 @@ Skills use `disable-model-invocation: true` — invoke them with the **slash com
 
 ```bash
 REPO=/path/to/cursor-peer-review
-for name in peer-review-plan peer-review-execution peer-review-ship issue-to-plan open-pr; do
+for name in peer-review-plan peer-review-execution peer-review-ship \
+            issue-to-plan open-pr merge-pr delivery-ship; do
   ln -sfn "$REPO/skills/$name" ~/.cursor/skills/$name
 done
 ```
@@ -81,25 +85,16 @@ done
 
 Execution also ships `collect-diff.sh` (workspace path argument; no extra env vars).
 
-Review transcripts are written under `~/.cursor/plan-reviews/` at runtime and are **never** part of this repo.
+Review transcripts under `~/.cursor/plan-reviews/` are **runtime artifacts** — never commit them here.
 
 ## Quick start
 
 ```text
-/peer-review-plan this plan
-# … Apply deltas if asked …
-# … Build when ready …
-/peer-review-execution this plan
-/open-pr
-```
-
-Or:
-
-```text
 /peer-review-ship this plan
+# Apply / Build when prompted …
+/delivery-ship
+# reply "merge" when checks look good
 ```
-
-Ship stops for Apply / Build-done / Fix. It never starts product implementation unless you explicitly ask at the Build gate.
 
 ## Default model panel (peer-review-*)
 
@@ -113,7 +108,7 @@ These are **Cursor Task `model:` slugs**. They will rot — edit `SKILL.md` + `r
 | Synthesizer | `composer-2.5` (preferred) | Falls back per `fallbacks.md` |
 | Defender | `cursor-grok-4.5-high` | Plan: `planner=`; execution: `builder=` |
 
-Quota tip: if GPT is exhausted, Critic C should jump to another family (see `references/fallbacks.md`) — do not burn turns on same-family retries.
+Quota tip: if GPT is exhausted, Critic C should jump family per `fallbacks.md` — do not burn same-family retries.
 
 ## Knobs
 
@@ -124,43 +119,35 @@ See each skill’s `SKILL.md`. Common peer-review flags:
 | `loops=N` | `2` | Review loops (1–4) |
 | `early-stop` | off | Stop after a clean loop (no blockers/majors) |
 | `no-save` | off | Chat-only (skip writing `plan-reviews/`) |
-| `gpt=high` | default | Critic C = Sol High (quality default) |
-| `gpt=medium` / `terra` / `cheap` | off | Weaker/cheaper Critic C (+ related) |
+| `gpt=high` | default | Critic C = Sol High |
+| `gpt=medium` / `terra` / `cheap` | off | Weaker/cheaper Critic C |
 | `from=plan` / `from=execution` | full ship | Ship handrail entry points |
-| `base=<ref>` | auto | Execution diff base when the tree is clean |
+| `base=<ref>` | auto | Execution / PR base |
 
 ### Empty diffs / initial commits
 
-`/peer-review-execution` uses `collect-diff.sh`. Prefer the **working tree** when dirty. When clean:
-
-- Diff is `base...HEAD` (default `main` / `master`).
-- If that range is empty **and** `HEAD` is a **root commit** (no parent), the script falls back to `empty-tree...HEAD` so the initial commit is reviewable.
-- If the range is empty on a long-lived branch tip, there is genuinely nothing to review — commit or leave uncommitted work, or pass an explicit `base=`.
+`collect-diff.sh`: prefer working tree when dirty; when clean, `base...HEAD`; if empty on a **root commit**, fall back to `empty-tree...HEAD`.
 
 ## Layout
 
 ```text
 install.sh
 SECURITY.md
-examples/                 # anonymized walkthrough artifacts
+examples/
 skills/
-  peer-review-plan/
-  peer-review-execution/  # includes collect-diff.sh
-  peer-review-ship/       # no scripts/ — orchestrator only
+  peer-review-plan|execution|ship/
   issue-to-plan/
   open-pr/
+  merge-pr/
+  delivery-ship/
 ```
-
-`resolve-plan.sh` and `report-path.sh` exist under both plan and execution on purpose: execution’s `report-path.sh` writes under `<stem>/execution/`. Keep them in sync mentally when you edit one.
 
 ## Limitations
 
-- Peer-review skills need Cursor Task/subagents and multi-model access.
-- Model slugs **will rot** — edit the skill files.
-- Snapshot workflow: no auto-sync unless you symlink via `./install.sh` from a clone you maintain.
-- Helper scripts assume bash (use WSL on Windows).
-- `/open-pr` does not merge; `/issue-to-plan` does not Build — by design.
-- No support commitment — fork freely.
+- Peer-review needs Task/subagents + multi-model access; model slugs rot.
+- No deploy recipes, no force-with-lease “machine branch sync,” no cloud IDs — keep those private.
+- Does not protect you from pasting secrets into chat/issues — don’t.
+- As-is / no support SLA.
 
 ## License
 

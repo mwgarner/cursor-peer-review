@@ -94,5 +94,6 @@ Write the plan file **only** after explicit user confirm. Then stop.
 Next (human-gated):
   /peer-review-plan <plan-path>
   # or /peer-review-ship <plan-path>
-  # Build and /open-pr only when you ask — never from this skill
+  # Build when you ask in chat — never from this skill
+  # Then /delivery-ship (or /open-pr → /merge-pr)
 ```

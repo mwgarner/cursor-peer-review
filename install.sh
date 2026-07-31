@@ -31,7 +31,9 @@ Install Cursor skills from this repo into ~/.cursor/skills/<name>.
 Skills:
   peer-review-plan, peer-review-execution, peer-review-ship
   issue-to-plan   (issue → draft plan; stops; untrusted input)
-  open-pr         (validate → commit → open PR; never merges)
+  open-pr         (validate → commit → open PR)
+  merge-pr        (checks + chat confirm → squash merge)
+  delivery-ship   (open-pr then merge-pr)
 
 Does not symlink the repo root or the parent skills/ directory.
 EOF
@@ -51,7 +53,7 @@ DEST="${CURSOR_SKILLS_DIR:-${HOME}/.cursor/skills}"
 if [[ "$SET" == "core" ]]; then
   NAMES=(peer-review-plan peer-review-execution peer-review-ship)
 else
-  NAMES=(peer-review-plan peer-review-execution peer-review-ship issue-to-plan open-pr)
+  NAMES=(peer-review-plan peer-review-execution peer-review-ship issue-to-plan open-pr merge-pr delivery-ship)
 fi
 
 mkdir -p "$DEST"
@@ -119,6 +121,6 @@ done
 echo
 echo "Done ($MODE, set=$SET). Try in Cursor (slash-invoke; reload window if skills are not listed):"
 echo "  /peer-review-plan | /peer-review-execution | /peer-review-ship"
-echo "  /issue-to-plan | /open-pr"
+echo "  /issue-to-plan | /open-pr | /merge-pr | /delivery-ship"
 echo
-echo "There is no full-send skill. Human gates stay on. See SECURITY.md."
+echo "No full-send from issue text. Agent merge uses /merge-pr chat confirm. See SECURITY.md."

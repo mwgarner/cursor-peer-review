@@ -56,6 +56,6 @@ peer-review-plan
 ## Related skills (not shown as artifacts)
 
 - `/issue-to-plan` — optional intake from a GitHub issue; **stops** at a draft plan (issue text is untrusted).
-- `/open-pr` — after Build, open a PR; **never merges**. Prefer merging in the GitHub UI.
+- `/open-pr` → `/merge-pr` (or `/delivery-ship`) — agent opens then lands the PR with **chat confirm** after checks; no force-push / `--admin`.
 
-There is still **no** issue→merge full-send path. See [SECURITY.md](../SECURITY.md).
+There is still **no** issue-body→merge full-send path. See [SECURITY.md](../SECURITY.md).

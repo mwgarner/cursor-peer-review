@@ -23,7 +23,7 @@ Related (optional, separate invokes — **not** auto-chained by this skill):
 | Skill | Role |
 |-------|------|
 | `/issue-to-plan` | Issue → draft plan → stop (untrusted input) |
-| `/open-pr` | After Build: open PR → stop (**never** merges) |
+| `/open-pr` / `/merge-pr` / `/delivery-ship` | Agent open PR + gated agent merge (chat confirm; no force/`--admin`) |
 
 Skim [references/examples.md](references/examples.md) if invocation is ambiguous.
 
@@ -113,7 +113,7 @@ When Build or fix work cites peer-review findings, use the ladder in the sibling
 3. No plan mutation during review loops; Apply only after Gate Apply confirm
 4. Keep ≤40-line carry inside each review phase (sibling rule)
 5. `from=plan` must not run execution; `from=execution` must not re-run plan review unless user asks
-6. No merge, force-push, deploy, or “full-send from GitHub issue” — hand off to `/open-pr` (stop before merge) only when the user asks in chat
+6. No force-push, `--admin`, deploy, or full-send from GitHub issue text — after Build use `/open-pr` then `/merge-pr` (or `/delivery-ship`); merge still needs chat confirm
 
 ## Corner cases
 
