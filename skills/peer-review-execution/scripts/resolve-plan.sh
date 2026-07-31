@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# resolve-plan.sh — locate/validate a Cursor plan for /peer-review-plan
+# resolve-plan.sh — locate/validate a Cursor plan for /peer-review-execution
 #
 # Usage:
 #   resolve-plan.sh                 # list recent plans

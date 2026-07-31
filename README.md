@@ -56,9 +56,11 @@ Scripts default to the usual Cursor locations. Override if needed:
 
 | Variable | Default | Used by |
 |----------|---------|---------|
-| `CURSOR_PLANS_DIR` | `~/.cursor/plans` | `resolve-plan.sh` |
-| `CURSOR_PLAN_REVIEWS_DIR` | `~/.cursor/plan-reviews` | `report-path.sh` |
-| `CURSOR_WORKSPACE` | `$PWD` | `resolve-plan.sh` |
+| `CURSOR_PLANS_DIR` | `~/.cursor/plans` | `resolve-plan.sh` in plan + execution |
+| `CURSOR_PLAN_REVIEWS_DIR` | `~/.cursor/plan-reviews` | `report-path.sh` in plan + execution |
+| `CURSOR_WORKSPACE` | `$PWD` | `resolve-plan.sh` in plan + execution |
+
+Execution also ships `collect-diff.sh` (takes a workspace path argument; no extra env vars).
 
 Review transcripts are written under `~/.cursor/plan-reviews/` at runtime and are **never** part of this repo.
 
